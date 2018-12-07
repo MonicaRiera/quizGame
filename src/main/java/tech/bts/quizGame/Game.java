@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Game {
     private List<Quiz> quizzes;
@@ -34,6 +35,7 @@ public class Game {
 
     public void addQuiz(Quiz quiz) throws Exception{
         quizzes.add(quiz);
+        this.maxScore = quizzes.size();
         Gson gson = new Gson();
         String json = gson.toJson(quizzes);
         PrintWriter writer = new PrintWriter("quizzes.json");
@@ -43,6 +45,10 @@ public class Game {
 
     public int getPoints() {
         return points;
+    }
+
+    public int getMaxScore() {
+        return maxScore;
     }
 
     public String getUserName() {
@@ -65,6 +71,37 @@ public class Game {
             System.out.println("Congratulations! You won the game with a score of " + this.points + " points over " + this.maxScore);
         } else {
             System.out.println("Your score is only " + this.points + ". You lose...");
+        }
+    }
+
+    public void play() {
+        Scanner scanner = new Scanner(System.in);
+        boolean horribleAnswer = false;
+        if (this.quizzes.size() == 0) {
+            throw new NoQuizzesException();
+        }
+
+        for (int i = 0; i < this.quizzes.size(); i++) {
+            Quiz quiz = this.quizzes.get(i);
+            System.out.println(quiz.getQuestion());
+            String answer = scanner.nextLine().toUpperCase();
+            if (quiz.getCorrectAnswers().contains(answer)) {
+                System.out.println("Correct answer!!");
+                setPoints(1);
+                if (horribleAnswer) {
+                    System.out.println("Extra point!!");
+                    setPoints(1);
+                    horribleAnswer = false;
+                }
+            } else if (quiz.getHorribleAnswers().contains(answer)) {
+                System.out.println("Horrible answer!!");
+                setPoints(-2);
+                horribleAnswer = true;
+            } else {
+                System.out.println("Wrong answer...");
+                horribleAnswer = false;
+            }
+
         }
     }
 }
